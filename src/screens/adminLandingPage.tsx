@@ -6,6 +6,9 @@ import { StepperPanel } from 'primereact/stepperpanel';
 import { Button } from 'primereact/button';
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
+import { submitFormData } from "../services/AdminService";
+import { showError, showSuccess, showWarn } from "../utiles/utilityFunctions";
+import Loader from "../components/loader";
 
 // dashboard
 // add person
@@ -16,6 +19,14 @@ import { InputText } from "primereact/inputtext";
 //countByDepartment
 //totalPaidAmountByDepartment
 
+interface FormValues {
+    name: string;
+    email: string;
+    department: string,
+    yearOfJoining: number | any,
+    crewId: string | number | any,
+    PFno: string | number | any
+}
 
 const AdminLandingPage: React.FC = () => {
     return (
@@ -44,64 +55,88 @@ const AdminLandingPage: React.FC = () => {
 
 const AdminActions: React.FC = () => {
     const stepperRef = useRef<any>(null);
+    const toast = useRef<Toast>(null);
 
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [department, setDepartment] = useState('');
-    const [yearOfJoining, setYearOfJoining] = useState('');
+    const [formValues, setFormValues] = useState<FormValues>({
+        name: '',
+        email: '',
+        department: '',
+        yearOfJoining: null,
+        crewId: '',
+        PFno: ''
+    });
+
+    const [loading, setLoading] = useState<boolean>(false);
+    const [message, setMessage] = useState<string>('');
     const [errors, setErrors] = useState<string[]>([]);
 
-    const toast = useRef<any>(null);
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormValues((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setErrors([]);
+        setLoading(true);
+        setMessage('');
 
+        const { name, yearOfJoining, PFno, crewId } = formValues;
         const newErrors: string[] = [];
+
+        // Validation logic
         if (!name) newErrors.push('Name is required');
         if (!yearOfJoining) {
             newErrors.push('Year of Joining is required');
         } else if (isNaN(Number(yearOfJoining)) || Number(yearOfJoining) < 2000 || Number(yearOfJoining) > new Date().getFullYear()) {
             newErrors.push('Year of Joining must be a valid year (2000 or later)');
         }
+        if (!PFno) newErrors.push('PF No is required');
+        if (!crewId) newErrors.push('Crew Id is required');
 
         if (newErrors.length > 0) {
             setErrors(newErrors);
-            showWarn(newErrors.join(', '));
+            showWarn(toast.current, newErrors.join(', '));
+            setLoading(false);
             return;
         }
 
-        try {
-            const response = await fetch('/api/employees', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, email, department, yearOfJoining }),
+        const updatedFormValues = {
+            ...formValues,
+            yearOfJoining: Number(formValues.yearOfJoining),
+        };
+
+        const response = await submitFormData(updatedFormValues);
+
+        if (response.success) {
+            setMessage('Form submitted successfully!');
+
+            setFormValues({
+
+                name: '',
+                email: '',
+                department: '',
+                yearOfJoining: null,
+                crewId: '',
+                PFno: '',
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to create employee');
-            }
-
-            const data = await response.json();
-            console.log(data);
-            // Handle success (e.g., show a success message, clear the form)
-            setName('');
-            setEmail('');
-            setDepartment('');
-            setYearOfJoining('');
-        } catch (error) {
-            console.error('Error:', error);
-            showWarn('Error occurred while adding employee.'); // Show toast on error
+            showSuccess(toast.current, response.message);
+            stepperRef.current.nextCallback()
+        } else {
+            setMessage(response.message);
+            showError(toast.current, response.message);
         }
+        setLoading(false);
     };
+    console.log("🚀 ~ formValues:", formValues)
 
-    const showWarn = (message: string) => {
-        toast.current.show({ severity: 'error', summary: 'Error', detail: message, life: 3000 });
-    };
 
-    console.error(errors)
+    console.log(message, errors);
 
     return (
         <>
@@ -111,48 +146,75 @@ const AdminActions: React.FC = () => {
                         <Toast ref={toast} />
                         <div className="flex flex-column ">
                             <div className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
-                                <form onSubmit={handleSubmit} >
-                                    <div className="grid">
-
-                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block ">
-
-                                            <InputText type="text" className="p-inputtext-sm" placeholder="Name"
-                                                id="name"
-                                                value={name}
-                                                onChange={(e) => setName(e.target.value)}
-                                            />
+                                {loading ? (<>
+                                    <Loader isLoading={loading} />
+                                </>) : (<>
+                                    <form onSubmit={handleSubmit}>
+                                        <div className="grid p-2">
+                                            <div className="md:col-4 col-12 flex justify-content-center">
+                                                <InputText
+                                                    type="text"
+                                                    className="p-inputtext-sm w-full"
+                                                    placeholder="Name"
+                                                    name="name"
+                                                    value={formValues.name}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                            <div className="md:col-4 col-12 flex justify-content-center">
+                                                <InputText
+                                                    type="email"
+                                                    className="p-inputtext-sm w-full"
+                                                    placeholder="Email"
+                                                    name="email"
+                                                    value={formValues.email}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                            <div className="md:col-4 col-12 flex justify-content-center">
+                                                <InputText
+                                                    type="text"
+                                                    className="p-inputtext-sm w-full"
+                                                    placeholder="Department"
+                                                    name="department"
+                                                    value={formValues.department}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                            <div className="md:col-4 col-12 flex justify-content-center">
+                                                <InputText
+                                                    type="number"
+                                                    className="p-inputtext-sm w-full"
+                                                    placeholder="Year of Joining"
+                                                    name="yearOfJoining"
+                                                    value={formValues.yearOfJoining}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                            <div className="md:col-4 col-12 flex justify-content-center">
+                                                <InputText
+                                                    type="number"
+                                                    className="p-inputtext-sm w-full"
+                                                    placeholder="Crew Id"
+                                                    name="crewId"
+                                                    value={formValues.crewId}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
+                                            <div className="md:col-4 col-12 flex justify-content-center">
+                                                <InputText
+                                                    type="number"
+                                                    className="p-inputtext-sm w-full"
+                                                    placeholder="PF No"
+                                                    name="PFno"
+                                                    value={formValues.PFno}
+                                                    onChange={handleChange}
+                                                />
+                                            </div>
                                         </div>
-
-                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block ">
-
-                                            <InputText type="email" className="p-inputtext-sm" placeholder="Email"
-
-                                                id="email"
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                            />
-                                        </div>
-
-                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block ">
-                                            <InputText type="text" className="p-inputtext-sm" placeholder="Department"
-                                                id="department"
-                                                value={department}
-                                                onChange={(e) => setDepartment(e.target.value)}
-                                            />
-                                        </div>
-
-                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block ">
-                                            <InputText type="number" className="p-inputtext-sm" placeholder="Year of joining"
-                                                id="yearOfJoining"
-                                                value={yearOfJoining}
-                                                onChange={(e) => setYearOfJoining(e.target.value)}
-                                            />
-                                        </div>
-
-
-                                    </div>
-                                    <Button label="Create Employee" icon="pi pi-arrow-right" iconPos="right" type='submit' className="m-2" onClick={() => stepperRef.current.nextCallback()} />
-                                </form>
+                                        <Button label="Create Employee" icon="pi pi-arrow-right" iconPos="right" type="submit" className="m-2" />
+                                    </form>
+                                </>)}
                             </div>
                         </div>
 
@@ -162,7 +224,7 @@ const AdminActions: React.FC = () => {
                             <div className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">Content II</div>
                         </div>
                         <div className="flex py-4 gap-2">
-                            <Button label="Back" severity="secondary" icon="pi pi-arrow-left" onClick={() => stepperRef.current.prevCallback()} />
+                            {/* <Button label="Back" severity="secondary" icon="pi pi-arrow-left" onClick={() => stepperRef.current.prevCallback()} /> */}
                             <Button label="Next" icon="pi pi-arrow-right" iconPos="right" onClick={() => stepperRef.current.nextCallback()} />
                         </div>
                     </StepperPanel>
