@@ -8,7 +8,7 @@ interface ApiResponse {
 
 // const API_URL = 'http://localhost:5000/api/v1/admin';
 
-const API_URL = 'https://payment-details-railwayapplication-backend.vercel.app';
+const API_URL = 'https://payment-details-railwayapplication-backend.vercel.app/api/v1/admin';
 
 const username = 'admin';
 const password = 'Railway';
