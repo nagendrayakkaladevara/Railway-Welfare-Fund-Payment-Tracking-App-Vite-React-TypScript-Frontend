@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000';
+// const API_URL = 'http://localhost:5000';
+
+const API_URL = 'https://payment-details-railwayapplication-backend.vercel.app';
 
 const username = 'admin';
 const password = 'Railway';
