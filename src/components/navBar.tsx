@@ -30,7 +30,11 @@ const NavBar: React.FC = () => {
         setPassword("");
     };
 
-
+    const handleLogOut = () => {
+        setVisibleBottom(false);
+        setIsLoggedIn(false);
+        toast.current?.show({ severity: 'info', summary: 'Info', detail: 'Logout successful!' });
+    }
 
 
     return (
@@ -40,7 +44,7 @@ const NavBar: React.FC = () => {
                     <p>logo</p>
                     <p>name</p>
                 </div>
-                {!isLoggedIn && <Button icon="pi pi-user" onClick={() => setVisibleBottom(true)} />}
+                {!isLoggedIn ? (<Button icon="pi pi-user" onClick={() => setVisibleBottom(true)} />) : (<Button icon="pi pi-sign-out" onClick={handleLogOut} tooltip="Log Out" tooltipOptions={{ position: 'left' }} />)}
             </div>
 
             <Sidebar visible={visibleBottom} position="bottom" onHide={() => setVisibleBottom(false)} className="h-26rem md:h-13rem">

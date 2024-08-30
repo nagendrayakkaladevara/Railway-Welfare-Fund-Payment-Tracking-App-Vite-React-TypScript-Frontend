@@ -114,7 +114,7 @@ const AdminActions: React.FC = () => {
                                 <form onSubmit={handleSubmit} >
                                     <div className="grid">
 
-                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block m-1">
+                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block ">
 
                                             <InputText type="text" className="p-inputtext-sm" placeholder="Name"
                                                 id="name"
@@ -123,7 +123,7 @@ const AdminActions: React.FC = () => {
                                             />
                                         </div>
 
-                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block m-1">
+                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block ">
 
                                             <InputText type="email" className="p-inputtext-sm" placeholder="Email"
 
@@ -133,7 +133,7 @@ const AdminActions: React.FC = () => {
                                             />
                                         </div>
 
-                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block m-1">
+                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block ">
                                             <InputText type="text" className="p-inputtext-sm" placeholder="Department"
                                                 id="department"
                                                 value={department}
@@ -141,7 +141,7 @@ const AdminActions: React.FC = () => {
                                             />
                                         </div>
 
-                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block m-1">
+                                        <div className="col-12 lg:col-3 xl:col-4 flex justify-content-center lg:block ">
                                             <InputText type="number" className="p-inputtext-sm" placeholder="Year of joining"
                                                 id="yearOfJoining"
                                                 value={yearOfJoining}
