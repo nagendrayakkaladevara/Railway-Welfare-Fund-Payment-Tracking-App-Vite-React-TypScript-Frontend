@@ -42,7 +42,7 @@ const NavBar: React.FC = () => {
             <div className="card flex justify-content-between p-2" style={{ boxShadow: "rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px" }}>
                 <div className="flex gap-2" style={{ paddingLeft: "20px" }}>
                     <p>logo</p>
-                    <p>name</p>
+                    {/* <p>name</p> */}
                 </div>
                 {!isLoggedIn ? (<Button icon="pi pi-user" onClick={() => setVisibleBottom(true)} />) : (<Button icon="pi pi-sign-out" onClick={handleLogOut} tooltip="Log Out" tooltipOptions={{ position: 'left' }} />)}
             </div>

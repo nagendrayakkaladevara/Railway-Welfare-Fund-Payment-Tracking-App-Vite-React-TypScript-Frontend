@@ -6,9 +6,19 @@ import { StepperPanel } from 'primereact/stepperpanel';
 import { Button } from 'primereact/button';
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
-import { submitFormData } from "../services/AdminService";
+import { submitFormData, submitPaymentData } from "../services/AdminService";
 import { showError, showSuccess, showWarn } from "../utiles/utilityFunctions";
 import Loader from "../components/loader";
+import { Dropdown } from "primereact/dropdown";
+import axios from "axios";
+
+
+interface PaymentHistoryFormValues {
+    employeeId: string;
+    yearOfPayment: string;
+    status: string;
+    amount: string;
+}
 
 // dashboard
 // add person
@@ -69,6 +79,19 @@ const AdminActions: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [message, setMessage] = useState<string>('');
     const [errors, setErrors] = useState<string[]>([]);
+    const [empId, setEmpId] = useState<string>('');
+
+    const [formPaymentValues, setFormPaymentValues] = useState<PaymentHistoryFormValues>({
+        employeeId: '',
+        yearOfPayment: '',
+        status: '',
+        amount: '',
+    });
+
+    const paymentStatusOptions = [
+        { name: 'PAID', code: 'PAID' },
+        { name: 'UNPAID', code: 'UNPAID' },
+    ];
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -79,6 +102,17 @@ const AdminActions: React.FC = () => {
     };
 
 
+    const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormPaymentValues({
+            ...formPaymentValues,
+            [name]: name === 'yearOfPayment' || name === 'amount' ? Number(value) : value,
+        });
+    };
+
+    const handleStatusChange = (e: { value: any }) => {
+        setFormPaymentValues({ ...formPaymentValues, status: e.value.code });
+    };
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -112,21 +146,21 @@ const AdminActions: React.FC = () => {
         };
 
         const response = await submitFormData(updatedFormValues);
+        console.log("🚀 ~ handleSubmit ~ response:", response)
+        setEmpId(response.data.employee._id);
 
         if (response.success) {
             setMessage('Form submitted successfully!');
 
-            setFormValues({
-
-                name: '',
-                email: '',
-                department: '',
-                yearOfJoining: null,
-                crewId: '',
-                PFno: '',
+            setFormPaymentValues({
+                employeeId: '',
+                yearOfPayment: '',
+                status: '',
+                amount: '',
             });
+     
             showSuccess(toast.current, response.message);
-            stepperRef.current.nextCallback()
+
         } else {
             setMessage(response.message);
             showError(toast.current, response.message);
@@ -136,14 +170,67 @@ const AdminActions: React.FC = () => {
     console.log("🚀 ~ formValues:", formValues)
 
 
-    console.log(message, errors);
+    const handlecreatePaymentHistorySubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        setErrors([]);
+        setLoading(true);
+
+        const payload = {
+            "employeeId": empId,
+            "yearOfPayment": formPaymentValues.yearOfPayment,
+            "status": formPaymentValues.status,
+            "amount": formPaymentValues.amount
+        }
+
+        const { yearOfPayment, amount, status } = formPaymentValues;
+        const newErrors: string[] = [];
+
+        // Validation logic
+        if (!yearOfPayment) newErrors.push('Year of Payment is required');
+        if (!amount) newErrors.push('Amount is required');
+        if (!status) newErrors.push('Please select payment status');
+
+        if (newErrors.length > 0) {
+            setErrors(newErrors);
+            showWarn(toast.current, newErrors.join(', '));
+            setLoading(false);
+            return;
+        }
+
+        const response = await submitPaymentData(payload);
+        if (response.success) {
+            setMessage('Form submitted successfully!');
+
+            setFormValues({
+                name: '',
+                email: '',
+                department: '',
+                yearOfJoining: null,
+                crewId: '',
+                PFno: '',
+            });
+            showSuccess(toast.current, response.message);
+            setEmpId('');
+
+        } else {
+            setMessage(response.message);
+            showError(toast.current, response.message);
+        }
+        setLoading(false);
+    };
+
+    const handleNext = () => {
+        stepperRef.current.nextCallback()
+    }
 
     return (
         <>
             <div className="card">
+                <Toast ref={toast} />
                 <Stepper ref={stepperRef} orientation="vertical">
                     <StepperPanel header="Add Employee">
-                        <Toast ref={toast} />
+
                         <div className="flex flex-column ">
                             <div className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
                                 {loading ? (<>
@@ -220,15 +307,100 @@ const AdminActions: React.FC = () => {
 
                     </StepperPanel>
                     <StepperPanel header="Create Payment History To the Employee">
-                        <div className="flex flex-column h-12rem">
-                            <div className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">Content II</div>
+                        {/* <div className="flex flex-column ">
+                            <div className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                <div className="grid p-2">
+                                    <div className="md:col-4 col-12 flex justify-content-center">
+                                        <InputText
+                                            type="text"
+                                            className="p-inputtext-sm w-full"
+                                            placeholder="Year of Payment"
+                                            name="yearofpayment"
+
+                                        />
+                                    </div>
+                                    <div className="md:col-4 col-12 flex justify-content-center">
+                                        <InputText
+                                            type="email"
+                                            className="p-inputtext-sm w-full"
+                                            placeholder="Status"
+                                            name="status"
+
+                                        />
+                                    </div>
+                                    <div className="md:col-4 col-12 flex justify-content-center">
+                                        <InputText
+                                            type="email"
+                                            className="p-inputtext-sm w-full"
+                                            placeholder="Amount"
+                                            name="amount"
+
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div> */}
+                        <div className="flex flex-column ">
+                            <div className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">
+                                {loading ? (<>
+                                    <Loader isLoading={loading} />
+                                </>) : (<>
+                                    <form onSubmit={handlecreatePaymentHistorySubmit} className="w-full">
+                                        <div className="grid p-2">
+                                            {/* <div className="md:col-4 col-12 flex justify-content-center">
+                                                <InputText
+                                                    type="text"
+                                                    className="p-inputtext-sm w-full"
+                                                    placeholder="Employee ID"
+                                                    name="employeeId"
+                                                    value={formValues.employeeId}
+                                                    onChange={handleChange}
+                                                />
+                                            </div> */}
+
+                                            <div className="md:col-4 col-12 flex justify-content-center">
+                                                <InputText
+                                                    type="number"
+                                                    className="p-inputtext-sm w-full"
+                                                    placeholder="Year of Payment"
+                                                    name="yearOfPayment"
+                                                    value={formPaymentValues.yearOfPayment}
+                                                    onChange={handlePaymentChange}
+                                                />
+                                            </div>
+
+                                            <div className="md:col-4 col-12 flex justify-content-center">
+                                                <Dropdown
+                                                    value={paymentStatusOptions.find((opt) => opt.code === formPaymentValues.status)}
+                                                    options={paymentStatusOptions}
+                                                    optionLabel="name"
+                                                    placeholder="Payment Status"
+                                                    className="w-full"
+                                                    onChange={handleStatusChange}
+                                                />
+                                            </div>
+
+                                            <div className="md:col-4 col-12 flex justify-content-center">
+                                                <InputText
+                                                    type="number"
+                                                    className="p-inputtext-sm w-full"
+                                                    placeholder="Amount"
+                                                    name="amount"
+                                                    value={formPaymentValues.amount}
+                                                    onChange={handlePaymentChange}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <Button label="Create Payment History" icon="pi pi-arrow-right" type="submit" className="m-2" />
+                                    </form>
+                                </>)}
+                            </div>
                         </div>
-                        <div className="flex py-4 gap-2">
-                            {/* <Button label="Back" severity="secondary" icon="pi pi-arrow-left" onClick={() => stepperRef.current.prevCallback()} /> */}
-                            <Button label="Next" icon="pi pi-arrow-right" iconPos="right" onClick={() => stepperRef.current.nextCallback()} />
-                        </div>
+
                     </StepperPanel>
-                    <StepperPanel header="Header III">
+
+                    <StepperPanel header="Header III" >
                         <div className="flex flex-column h-12rem">
                             <div className="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium">Content III</div>
                         </div>
@@ -236,6 +408,7 @@ const AdminActions: React.FC = () => {
                             <Button label="Back" severity="secondary" icon="pi pi-arrow-left" onClick={() => stepperRef.current.prevCallback()} />
                         </div>
                     </StepperPanel>
+
                 </Stepper>
             </div>
 
