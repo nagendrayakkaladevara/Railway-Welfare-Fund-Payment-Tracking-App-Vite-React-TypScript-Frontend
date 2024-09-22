@@ -2,9 +2,10 @@ import { Chart } from "primereact/chart";
 import { useEffect, useState } from "react";
 
 interface PolarAreaDemoPropos {
-
+    Xaxis: any;
+    Yaxis: any
 }
-const PolarAreaDemo: React.FC<PolarAreaDemoPropos> = () => {
+const PolarAreaDemo: React.FC<PolarAreaDemoPropos> = ({ Xaxis, Yaxis }) => {
     const [chartData, setChartData] = useState({});
     const [chartOptions, setChartOptions] = useState({});
 
@@ -15,7 +16,7 @@ const PolarAreaDemo: React.FC<PolarAreaDemoPropos> = () => {
         const data = {
             datasets: [
                 {
-                    data: [11, 16, 7, 3, 14],
+                    data:Xaxis ,
                     backgroundColor: [
                         documentStyle.getPropertyValue('--red-500'),
                         documentStyle.getPropertyValue('--green-500'),
@@ -23,10 +24,10 @@ const PolarAreaDemo: React.FC<PolarAreaDemoPropos> = () => {
                         documentStyle.getPropertyValue('--bluegray-500'),
                         documentStyle.getPropertyValue('--blue-500')
                     ],
-                    label: 'My dataset'
+                    label: 'Emp count'
                 }
             ],
-            labels: ['Red', 'Green', 'Yellow', 'Grey', 'Blue']
+            labels:  Yaxis
         };
         const options = {
             plugins: {

@@ -6,7 +6,7 @@ import { StepperPanel } from 'primereact/stepperpanel';
 import { Button } from 'primereact/button';
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
-import { getTotalAmountByYearData, submitFormData, submitPaymentData } from "../services/AdminService";
+import { getcountByDepartmentData, getTotalAmountByYearData, submitFormData, submitPaymentData } from "../services/AdminService";
 import { showError, showSuccess, showWarn } from "../utiles/utilityFunctions";
 import Loader from "../components/loader";
 import BasicDemo from "../components/barChart";
@@ -374,7 +374,7 @@ const AdminActions: React.FC = () => {
                                                     optionLabel="name"
                                                     placeholder="Payment Status"
                                                     className="w-full"
-                                                    onChange={handleStatusChange} 
+                                                    onChange={handleStatusChange}
                                                 />
                                             </div>
 
@@ -437,9 +437,36 @@ const DashBoard = () => {
         fetchData();
     }, []);
 
-    const YAxisData = Object.keys(dataSource);
-    const XAxisData = Object.values(dataSource);
+    const YAxisData = dataSource && Object.keys(dataSource);
+    const XAxisData = dataSource && Object.values(dataSource);
 
+
+    const [EmpCountByDepartmentdataSource, setEmpCountByDepartmentdataSource] = useState<any>([]);
+    const [empCountByDepartmentdataSourceloading, setEmpCountByDepartmentdataSourceLoading] = useState<boolean>(true);
+    const [empCountByDepartmentdataSourceerror, setEmpCountByDepartmentdataSourceError] = useState<string | null>(null);
+    console.log("🚀 ~ DashBoard ~ empCountByDepartmentdataSourceerror:", empCountByDepartmentdataSourceerror)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const result = await getcountByDepartmentData();
+
+                setEmpCountByDepartmentdataSource(result?.data);
+            } catch (err) {
+                setEmpCountByDepartmentdataSourceError('Failed to fetch data');
+            } finally {
+                setEmpCountByDepartmentdataSourceLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const XAxisCountByDepartmentData =EmpCountByDepartmentdataSource && Object.values(EmpCountByDepartmentdataSource);
+
+    const YAxisCountByDepartmentData = EmpCountByDepartmentdataSource && Object.keys(EmpCountByDepartmentdataSource);
+    console.log("🚀 ~ DashBoard ~ XAxisCountByDepartmentData:", XAxisCountByDepartmentData)
+    console.log("🚀 ~ DashBoard ~ YAxisCountByDepartmentData:", YAxisCountByDepartmentData)
     return (
         <>
             <div className="pb-3">
@@ -456,7 +483,7 @@ const DashBoard = () => {
                     <span className="rounded-md bg-primary-50 px-3 py-1 text-sm font-semibold text-primary-600"> Emp Count By Department </span>
                 </div>
                 <div className="p-4" style={{ boxShadow: "rgba(0, 0, 0, 0.15) 0px 3px 3px 0px" }}>
-                    {loading ? (<Loader isLoading={loading} />) : (<PolarAreaDemo />)}
+                    {empCountByDepartmentdataSourceloading ? (<Loader isLoading={loading} />) : (<PolarAreaDemo Xaxis={XAxisCountByDepartmentData} Yaxis={YAxisCountByDepartmentData} />)}
                 </div>
 
             </div>
