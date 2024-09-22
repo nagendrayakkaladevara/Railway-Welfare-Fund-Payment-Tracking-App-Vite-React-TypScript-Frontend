@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Chart } from 'primereact/chart';
-import Loader from './loader';
 
 interface BasicDemoProps {
     Xaxis: any,
@@ -10,6 +9,7 @@ interface BasicDemoProps {
 }
 
 const BasicDemo: React.FC<BasicDemoProps> = ({ Xaxis, Yaxis, loading }) => {
+    console.log("🚀 ~ loading:", loading)
     const [chartData, setChartData] = useState({});
     const [chartOptions, setChartOptions] = useState({});
 

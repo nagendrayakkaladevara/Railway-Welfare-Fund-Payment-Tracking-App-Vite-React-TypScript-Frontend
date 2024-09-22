@@ -74,7 +74,9 @@ const AdminActions: React.FC = () => {
 
     const [loading, setLoading] = useState<boolean>(false);
     const [message, setMessage] = useState<string>('');
+    console.log("🚀 ~ message:", message)
     const [errors, setErrors] = useState<string[]>([]);
+    console.log("🚀 ~ errors:", errors)
     const [empId, setEmpId] = useState<string>('');
 
     const [formPaymentValues, setFormPaymentValues] = useState<PaymentHistoryFormValues>({
@@ -216,9 +218,9 @@ const AdminActions: React.FC = () => {
         setLoading(false);
     };
 
-    const handleNext = () => {
-        stepperRef.current.nextCallback()
-    }
+    // const handleNext = () => {
+    //     stepperRef.current.nextCallback()
+    // }
 
     return (
         <>
@@ -417,6 +419,7 @@ const DashBoard = () => {
     const [dataSource, setDataSource] = useState<any>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    console.log("🚀 ~ DashBoard ~ error:", error)
 
     useEffect(() => {
         const fetchData = async () => {
