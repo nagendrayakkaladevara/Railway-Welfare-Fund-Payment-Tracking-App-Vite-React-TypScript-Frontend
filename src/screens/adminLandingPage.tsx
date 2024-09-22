@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TabView, TabPanel } from 'primereact/tabview';
 import UserLandingPage from "./userLandingPage";
 import { Stepper } from 'primereact/stepper';
@@ -6,11 +6,12 @@ import { StepperPanel } from 'primereact/stepperpanel';
 import { Button } from 'primereact/button';
 import { Toast } from "primereact/toast";
 import { InputText } from "primereact/inputtext";
-import { submitFormData, submitPaymentData } from "../services/AdminService";
+import { getTotalAmountByYearData, submitFormData, submitPaymentData } from "../services/AdminService";
 import { showError, showSuccess, showWarn } from "../utiles/utilityFunctions";
 import Loader from "../components/loader";
+import BasicDemo from "../components/barChart";
 import { Dropdown } from "primereact/dropdown";
-import axios from "axios";
+import PolarAreaDemo from "../components/polarAreaDemo";
 
 
 interface PaymentHistoryFormValues {
@@ -50,12 +51,7 @@ const AdminLandingPage: React.FC = () => {
                         <AdminActions />
                     </TabPanel>
                     <TabPanel header="Dashboard">
-                        <p className="m-0">
-                            At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti
-                            quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in
-                            culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio.
-                            Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus.
-                        </p>
+                        <DashBoard />
                     </TabPanel>
                 </TabView>
             </div>
@@ -158,7 +154,7 @@ const AdminActions: React.FC = () => {
                 status: '',
                 amount: '',
             });
-     
+
             showSuccess(toast.current, response.message);
 
         } else {
@@ -416,4 +412,53 @@ const AdminActions: React.FC = () => {
         </>
     )
 }
+
+const DashBoard = () => {
+    const [dataSource, setDataSource] = useState<any>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const result = await getTotalAmountByYearData();
+
+                setDataSource(result?.data);
+            } catch (err) {
+                setError('Failed to fetch data');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const YAxisData = Object.keys(dataSource);
+    const XAxisData = Object.values(dataSource);
+
+    return (
+        <>
+            <div className="pb-3">
+                <div className="flex flex-wrap items-center justify-center gap-2 pb-2">
+                    <span className="rounded-md bg-primary-50 px-3 py-1 text-sm font-semibold text-primary-600"> Total Amount Year Wise </span>
+                </div>
+                <div className="p-4" style={{ boxShadow: "rgba(0, 0, 0, 0.15) 0px 3px 3px 0px" }}>
+                    {loading ? (<Loader isLoading={loading} />) : (<BasicDemo Xaxis={XAxisData} Yaxis={YAxisData} />)}
+                </div>
+
+            </div>
+            <div>
+                <div className="flex flex-wrap items-center justify-center gap-2 pb-2">
+                    <span className="rounded-md bg-primary-50 px-3 py-1 text-sm font-semibold text-primary-600"> Emp Count By Department </span>
+                </div>
+                <div className="p-4" style={{ boxShadow: "rgba(0, 0, 0, 0.15) 0px 3px 3px 0px" }}>
+                    {loading ? (<Loader isLoading={loading} />) : (<PolarAreaDemo />)}
+                </div>
+
+            </div>
+        </>
+    )
+}
+
 export default AdminLandingPage;

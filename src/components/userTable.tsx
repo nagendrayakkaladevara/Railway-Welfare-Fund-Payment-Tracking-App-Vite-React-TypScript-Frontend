@@ -92,7 +92,7 @@ const UserTable: React.FC = () => {
     },
   ];
 
-  console.error(error);
+  console.log(error);
 
 
   return (

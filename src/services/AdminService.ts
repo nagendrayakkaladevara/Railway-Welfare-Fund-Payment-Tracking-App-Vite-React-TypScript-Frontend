@@ -6,9 +6,9 @@ interface ApiResponse {
     data?: any;
 }
 
-const API_URL = 'http://localhost:5000/api/v1/admin';
+// const API_URL = 'http://localhost:5000/api/v1/admin';
 
-// const API_URL = 'https://payment-details-railwayapplication-backend.vercel.app/api/v1/admin';
+const API_URL = 'https://payment-details-railwayapplication-backend.vercel.app/api/v1/admin';
 
 const username = 'admin';
 const password = 'Railway';
@@ -56,6 +56,46 @@ export const submitPaymentData = async (formData: Record<string, any>): Promise<
         return {
             success: false,
             message: error.response?.data?.message || 'An error occurred while submitting the payment details',
+        };
+    }
+};
+
+export const getTotalAmountByYearData = async (): Promise<ApiResponse> => {
+    try {
+        const response = await axios.get(`${API_URL}/totalAmountByYear`, {
+            headers: {
+                'Authorization': `Basic ${encodeCredentials(username, password)}`,
+            },
+        });
+        return {
+            success: true,
+            message: response.data.message,
+            data: response.data,
+        };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'An error occurred while getting the details',
+        };
+    }
+};
+
+export const getcountByDepartmentData = async (): Promise<ApiResponse> => {
+    try {
+        const response = await axios.get(`${API_URL}/countByDepartment`, {
+            headers: {
+                'Authorization': `Basic ${encodeCredentials(username, password)}`,
+            },
+        });
+        return {
+            success: true,
+            message: response.data.message,
+            data: response.data,
+        };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'An error occurred while getting the details',
         };
     }
 };
