@@ -372,7 +372,7 @@ const AdminActions: React.FC = () => {
                                                     optionLabel="name"
                                                     placeholder="Payment Status"
                                                     className="w-full"
-                                                    onChange={handleStatusChange}
+                                                    onChange={handleStatusChange} 
                                                 />
                                             </div>
 
